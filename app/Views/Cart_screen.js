@@ -10,8 +10,8 @@ export default class Cart_screen extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      data3: dataProducts.data3,
-      data4: dataProducts.data4,
+      data3: [],
+      data4: [],
       total: 0
     }
   }
@@ -27,12 +27,13 @@ export default class Cart_screen extends Component {
   delete = id => {
     axios.delete(`http://192.168.43.108:3333/api/v1/orders/${id}`).then(res => {
       axios.get(`http://192.168.43.108:3333/api/v1/orders/`)
-      .then(res => {
-        const orders = res;
-        this.setState({ data4: orders.data });
-      })}).catch(error => {
+        .then(res => {
+          const orders = res;
+          this.setState({ data4: orders.data });
+        })
+    }).catch(error => {
       alert(error)
-    }) 
+    })
   }
 
   static navigationOptions = {
@@ -42,10 +43,10 @@ export default class Cart_screen extends Component {
   total_price() {
     var sum = 0;
     for (var i = 0; i < this.state.data4.length; i++) {
-      const total = this.state.data4[i].price_products * this.state.data4[i].quantity 
+      const total = this.state.data4[i].price_products * this.state.data4[i].quantity
       sum += total
     }
-    return parseFloat(sum).toFixed(2); 
+    return parseFloat(sum).toFixed(2);
   }
 
 
@@ -91,35 +92,50 @@ export default class Cart_screen extends Component {
                             const orders = {
                               quantity: data.quantity - 1
                             };
-                            axios.patch(`http://192.168.43.108:3333/api/v1/orders/${data.id}`, orders)
-                              .then(res => {
-                                axios.get(`http://192.168.43.108:3333/api/v1/orders/`)
-                                  .then(res => {
-                                    const orders = res;
-                                    this.setState({ data4: orders.data });
-                                  })
-                              })
+                            if (quantity === 0) {
+                              this.delete(data.id)
+                            } else {
+                              axios.patch(`http://192.168.43.108:3333/api/v1/orders/${data.id}`, orders)
+                                .then(res => {
+                                  axios.get(`http://192.168.43.108:3333/api/v1/orders/`)
+                                    .then(res => {
+                                      const orders = res;
+                                      this.setState({ data4: orders.data });
+                                    })
+                                })
+                            }
                           }}><Text>-</Text></Button>
                           </Col>
                           <Col>
                             <Button style={{ backgroundColor: "#FFF", borderColor: "#CCC", borderWidth: 1, }}><Text style={{ color: "#333" }}>{data.quantity}</Text></Button>
                           </Col>
-                          <Col><Button onPress={() => {
-                            const orders = {
-                              quantity: data.quantity + 1
-                            };
-                            axios.patch(`http://192.168.43.108:3333/api/v1/orders/${data.id}`, orders)
-                              .then(res => {
-                                axios.get(`http://192.168.43.108:3333/api/v1/orders/`)
-                                  .then(res => {
-                                    const orders = res;
-                                    this.setState({ data4: orders.data });
-                                  })
-                              })
-                          }}><Text>+</Text></Button></Col>
+                          <Col>
+                            <Button onPress={() => {
+                              const orders = {
+                                quantity: data.quantity + 1
+                              };
+                              axios.patch(`http://192.168.43.108:3333/api/v1/orders/${data.id}`, orders)
+                                .then(res => {
+                                  axios.get(`http://192.168.43.108:3333/api/v1/orders/`)
+                                    .then(res => {
+                                      const orders = res;
+                                      this.setState({ data4: orders.data });
+                                    })
+                                })
+                            }}><Text>+</Text>
+                            </Button>
+                          </Col>
                         </Row>
-                        <Button style={{ backgroundColor: "red" }} onPress={() => this.delete(data.id)}><Text style={{ color: "white", fontWeight: "bold", textAlign: "center" }}>Remove</Text>
-                        </Button>
+                        <Row>
+                          <Col>
+                            <Text style={{ fontWeight: "bold"}}>Amount :</Text>
+                            <Text style={styles.price}>$ {data.price_products * data.quantity}</Text>
+                          </Col>
+                          <Col>
+                            <Button style={{ backgroundColor: "red" }} onPress={() => this.delete(data.id)}><Text style={{ color: "white", fontWeight: "bold", textAlign: "center" }}>Remove</Text>
+                            </Button>
+                          </Col>
+                        </Row>
                       </Col>
                     </Row>
                   </Grid>
@@ -138,7 +154,9 @@ export default class Cart_screen extends Component {
                 <Button style={{ backgroundColor: "#FFF", width: '100%', marginRight: 5, borderColor: "#FB6542", borderWidth: 1 }}><Text style={{ color: '#FB6542', textAlign: "center" }}>$ Total : {this.total_price()}</Text></Button>
               </Col>
               <Col>
-                <Button title="Go to Cart" style={{ backgroundColor: '#fb8b31', width: '95%', marginLeft: 3, }}>
+                <Button title="Go to Cart" style={{ backgroundColor: '#fb8b31', width: '95%', marginLeft: 3, }} onPress={() => {
+                  this.props.navigation.navigate("Checkout");
+                }}>
                   <Text style={{ textAlign: "center" }}> Payment </Text>
                 </Button>
               </Col>
@@ -151,23 +169,23 @@ export default class Cart_screen extends Component {
 }
 
 const styles = StyleSheet.create({
-    price: {
-        fontSize: 14,
-        color: "#fb8b31",
-        fontWeight: "500"
-    },
-    title_products: {
-        fontSize: 16,
-        fontWeight: "500",
-    },
-    headerStyle: {
-        fontSize: 24,
-        textAlign: 'center',
-        fontWeight: '100',
-        marginBottom: 24
-    },
-    footerStyle: {
-        backgroundColor: '#CCC'
-    }
+  price: {
+    fontSize: 14,
+    color: "#fb8b31",
+    fontWeight: "500"
+  },
+  title_products: {
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  headerStyle: {
+    fontSize: 24,
+    textAlign: 'center',
+    fontWeight: '100',
+    marginBottom: 24
+  },
+  footerStyle: {
+    backgroundColor: '#CCC'
+  }
 
 });

@@ -3,7 +3,7 @@ import { Image, StyleSheet, Dimensions, TouchableOpacity, Alert } from "react-na
 import { Container, Content, Text, Button } from 'native-base';
 import { Col, Row, Grid } from "react-native-easy-grid";
 import axios from 'axios';
-import { dataProducts } from '../Faker/Faker'
+import dataProducts from '../Faker/Faker.js';
 
 // Ini untuk meresponsivekan data
 const deviceWidth = Dimensions.get('window').width;
@@ -18,39 +18,29 @@ export default class Home_screen extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            data3 : [],
-            data4 : []
+            dataProducts: [],
+            order: [],
+            qty:[]
         }
     }
 
     componentDidMount() {
-        this.fetchDataProducts();
-        this.fetchDataOrders();
-    }
-
-    async fetchDataProducts() {
-        await axios.get(`http://192.168.43.108:3333/api/v1/products/`)
+        axios.get(`http://192.168.43.108:3333/api/v1/products/`)
             .then(res => {
                 const products = res;
-                // this.setState({ data3: products.data });
-                dataProducts.data3.push(products.data)
-                       
+                this.setState({ dataProducts: products.data });
             })
-    }
-
-    async fetchDataOrders() {
-        await axios.get(`http://192.168.43.108:3333/api/v1/orders/`)
+        axios.get(`http://192.168.43.108:3333/api/v1/orders/`)
             .then(res => {
                 const orders = res;
-                // this.setState({ data4: orders.data });
-                // dataProducts.data3 = products
+                this.setState({ order: orders.data });
             })
     }
 
     render() {
         return (
             <Container>
-                {alert(JSON.stringify(dataProducts.data3))}
+                {/* {console.warn(this.state.order)} */}
                 <Content style={{ backgroundColor: '#f4f7f6' }}>
                     <Grid style={{ flexWrap: 'wrap', }}>
                         <Col style={{ width: deviceWidth / 2 - 10, margin: 5 }}><Text style={{ fontWeight: '500', marginBottom: 8, marginTop: 8, fontSize: 18, color: '#767676' }}>FEATURED</Text></Col>
@@ -58,7 +48,7 @@ export default class Home_screen extends Component {
                     </Grid>
 
                     <Grid style={{ flexWrap: 'wrap' }}>
-                        {dataProducts.data3.map((data, index) => (
+                        {this.state.dataProducts.map((data, index) => (
                             <Col key={index} style={{ borderWidth: 1, borderColor: '#CCC', width: deviceWidth / 3 - 10, margin: 5 }}>
                                 <TouchableOpacity onPress={() => {
                                     this.props.navigation.navigate("Details", {
@@ -86,11 +76,45 @@ export default class Home_screen extends Component {
                                         <Row style={{ marginTop: 15, }}>
                                             <Button style={{ height: 30, backgroundColor: '#fb8b31', width:"100%" }} title="Add to cart"
                                                 onPress={() => {
-                                                    if (dataProducts.data4.find(cari => cari.id_products === data.id)) {
-                                                       alert('data sudah ada')
+                                                    if (this.state.order.find(cari => cari.id_products === data.id)) {
+                                                        axios.patch(`http://192.168.43.108:3333/api/v1/orders/${data.id_orders}`, { quantity: data.quantity + 1 })
+                                                            .then(res => {
+                                                                axios.get(`http://192.168.43.108:3333/api/v1/orders/`)
+                                                                    .then(res => {
+                                                                        const orders = res;
+                                                                        this.setState({ order: orders.data });
+                                                                    })
+                                                                axios.get(`http://192.168.43.108:3333/api/v1/products/`)
+                                                                    .then(res => {
+                                                                        const products = res;
+                                                                        this.setState({ dataProducts: products.data });
+                                                                    })
+                                                                alert('Your quantity increases')
+                                                            }).catch((error) => {
+                                                                alert(error)
+                                                            })
                                                     }
                                                     else {
-                                                        alert('data belum ada')
+                                                        const qty = {
+                                                            id_products: data.id,
+                                                            quantity: 1
+                                                        };
+                                                        axios.post('http://192.168.43.108:3333/api/v1/orders/', qty)
+                                                            .then(res => {
+                                                                axios.get(`http://192.168.43.108:3333/api/v1/orders/`)
+                                                                    .then(res => {
+                                                                        const orders = res;
+                                                                        this.setState({ order: orders.data });
+                                                                    })
+                                                                axios.get(`http://192.168.43.108:3333/api/v1/products/`)
+                                                                    .then(res => {
+                                                                        const products = res;
+                                                                        this.setState({ dataProducts: products.data });
+                                                                    })
+                                                                alert('Product Has Beed Added')
+                                                            }).catch((error) => {
+                                                                alert(error)
+                                                            })
                                                     }
                                                 }}>
                                                 <Text style={{ fontWeight: "bold", fontSize: 8, }}>Add cart</Text>
