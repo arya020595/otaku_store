@@ -7,20 +7,22 @@ import Home_screen from './app/Views/Home_screen'
 import Detail_screen from './app/Views/Detail_screen'
 import Cart_screen from './app/Views/Cart_screen'
 import Checkout_screen from './app/Views/Checkout_screen'
+import Purchase_screen from './app/Views/Purchase_screen'
 
 const RootStack = createStackNavigator(
   {
     Home: Home_screen,
     Details: Detail_screen,
     Cart: Cart_screen,
-    Checkout: Checkout_screen
+    Checkout: Checkout_screen,
+    Purchase: Purchase_screen,
   },
   {
     initialRouteName: 'Home',
     /* The header config from HomeScreen is now here */
     defaultNavigationOptions: {
       headerStyle: {
-        backgroundColor: '#fb8642',
+        backgroundColor: '#FF5A09',
       },
       headerTintColor: '#fff',
       headerTitleStyle: {

@@ -61,7 +61,7 @@ export default class Detail_screen extends Component {
                         <CardItem>
                             <Grid>
                                 <Col>
-                                    <Button title="Go to Cart" style={{ backgroundColor: '#fb8b31', width: '100%', marginRight: 5, }} onPress={() => {
+                                    <Button title="Go to Cart" style={{ backgroundColor: '#FF5A09', width: '100%', marginRight: 5, }} onPress={() => {
                                         if (this.state.product.quantity === null) {
                                             const products = {
                                                 id_products: this.state.product.id,

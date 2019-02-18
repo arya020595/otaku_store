@@ -12,7 +12,7 @@ export default class Checkout_screen extends Component {
     };
     // const { navigation } = this.props;
     // this.totalharga = navigation.getParam("totalharga", "NO-ID");
-    console.warn(this.state.selected)
+    // console.warn(this.state.selected)
   }
 
   total_price() {
@@ -22,6 +22,15 @@ export default class Checkout_screen extends Component {
       sum += total
     }
     return (parseFloat(sum) + parseFloat(this.state.selected)).toFixed(2);
+  }
+
+  sub_total_price() {
+    var sum = 0;
+    for (var i = 0; i < this.state.data1.length; i++) {
+      const total = this.state.data1[i].price_products * this.state.data1[i].quantity
+      sum += total
+    }
+    return (parseFloat(sum)).toFixed(2);
   }
 
   componentDidMount() {
@@ -43,7 +52,7 @@ export default class Checkout_screen extends Component {
   render() {
     return (
       <Container>
-        <Content style={{backgroundColor:'#CCC'}}>
+        <Content style={{backgroundColor:"#CCC"}}>
           <Card>
             <CardItem header>
               <Text>Your data</Text>
@@ -91,7 +100,6 @@ export default class Checkout_screen extends Component {
             <CardItem header>
               <Text>Select Courier</Text>
             </CardItem>
-            
             <Form style={{paddingLeft:10, width:'70%'}}>
               <Picker
                 selectedValue={this.state.selected}
@@ -102,7 +110,7 @@ export default class Checkout_screen extends Component {
                   this.setState({ selected: itemValue })
                 }
               >
-                <Picker.Item label="Pilih" value="pilih" />
+                <Picker.Item label="Select courier" value="pilih" />
                 <Picker.Item label="JNE - $10" value="10" />
                 <Picker.Item label="TIKI - $5" value="5" />
                 <Picker.Item label="JD ID - $9" value="9" />
@@ -110,27 +118,52 @@ export default class Checkout_screen extends Component {
                 <Picker.Item label="POS INDONESIA - $3" value="3" />
               </Picker>
             </Form>
-
           </Card>
-
+          
           <Card>
             <CardItem footer bordered>
-              <Text style={{ color: "#ed4343" }}>Total Payment : $ {this.total_price()}</Text>
+              <Text>Order Summary</Text>
+            </CardItem>
+            <CardItem>
+              <Left>
+                <Text>Sub total {this.state.data1.reduce(function (prev, cur) {
+                  return prev + cur.quantity;
+                }, 0)} item</Text>
+              </Left>
+              <Right>
+                <Text note>$ {this.sub_total_price()}</Text>
+              </Right>
+            </CardItem>
+            <CardItem>
+              <Left>
+              {this.state.selected === 0 ? <Text>
+                Please Select Courier</Text> : <Text>Shipping</Text> }
+              </Left>
+              <Right>
+                <Text note>$ {this.state.selected}</Text>
+              </Right>
+            </CardItem>
+            <CardItem>
+              <Left>
+                <Text style={{ fontWeight: 'bold' }}>Total Payment : </Text>
+              </Left>
+              <Right>
+                <Text style={{ fontWeight: 'bold' }}>$ {this.total_price()}</Text>
+              </Right>
             </CardItem>
           </Card>
         </Content>
         <TouchableOpacity onPress={() => {
-          axios.delete(`http://192.168.43.108:3333/api/v1/orders/`)
-          .then(res => {
-            axios.get(`http://192.168.43.108:3333/api/v1/orders/`)
-              .then(res => {
-                const orders = res;
-                this.setState({ data4: orders.data });
-              })
+          if (this.state.selected === 0) {
+            alert("Select courier first")
+          } else {
+            this.props.navigation.navigate("Purchase", {
+              kurir: this.state.selected
             })
+          }
           }}>
-          <Footer style={{ backgroundColor: 'red' }}>
-            <Text style={{ marginTop: 15, justifyContent: 'center', textAlign: 'center', color: 'white', fontWeight: 'bold' }}>Pay Now</Text>
+          <Footer style={{ backgroundColor: '#FF5A09' }}>
+            <Text style={{ marginTop: 15, justifyContent: 'center', textAlign: 'center', color: 'white', fontWeight: 'bold' }}>Checkout</Text>
           </Footer>
         </TouchableOpacity>
       </Container>

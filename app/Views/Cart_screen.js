@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Image, StyleSheet, TouchableOpacity } from "react-native";
+import { Image, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { Container, Content, Card, CardItem, Text, Button, Footer, Label } from 'native-base';
 import { Col, Row, Grid } from "react-native-easy-grid";
 import axios from 'axios';
@@ -25,15 +25,30 @@ export default class Cart_screen extends Component {
   }
 
   delete = id => {
-    axios.delete(`http://192.168.43.108:3333/api/v1/orders/${id}`).then(res => {
-      axios.get(`http://192.168.43.108:3333/api/v1/orders/`)
-        .then(res => {
-          const orders = res;
-          this.setState({ data4: orders.data });
-        })
-    }).catch(error => {
-      alert(error)
-    })
+    Alert.alert(
+      'Delete Confirm',
+      'Are you sure to delete your item cart ?',
+      [
+        {
+          text: 'No',
+          onDismiss: () => { },
+          style: 'cancel',
+        },
+        { text: 'Yes', 
+          onPress: () => axios.delete(`http://192.168.43.108:3333/api/v1/orders/${id}`).then(res => {
+            axios.get(`http://192.168.43.108:3333/api/v1/orders/`)
+              .then(res => {
+                const orders = res;
+                this.setState({ data4: orders.data });
+              })
+          }).catch(error => {
+            alert(error)
+          }), 
+        },
+      ],
+      { cancelable: false },
+    );
+    
   }
 
   static navigationOptions = {
@@ -62,7 +77,7 @@ export default class Cart_screen extends Component {
   render() {
     return (
       <Container>
-        <Content>
+        <Content style={{ backgroundColor: "#CCC" }}>
           {this.state.data4.map((data, index) => {
             return (
               <Card key={index}>
@@ -88,11 +103,11 @@ export default class Cart_screen extends Component {
 
                         <Label style={{ marginTop: 8, marginBottom: 3 }}>Quantity :</Label>
                         <Row style={{ marginBottom: 10, }}>
-                          <Col><Button onPress={() => {
+                          <Col><Button style={{ backgroundColor:"#FF5A09" }} onPress={() => {
                             const orders = {
                               quantity: data.quantity - 1
                             };
-                            if (quantity === 0) {
+                            if (data.quantity <= 1) {
                               this.delete(data.id)
                             } else {
                               axios.patch(`http://192.168.43.108:3333/api/v1/orders/${data.id}`, orders)
@@ -110,7 +125,7 @@ export default class Cart_screen extends Component {
                             <Button style={{ backgroundColor: "#FFF", borderColor: "#CCC", borderWidth: 1, }}><Text style={{ color: "#333" }}>{data.quantity}</Text></Button>
                           </Col>
                           <Col>
-                            <Button onPress={() => {
+                            <Button style={{ backgroundColor: "#FF5A09" }} onPress={() => {
                               const orders = {
                                 quantity: data.quantity + 1
                               };
@@ -132,7 +147,7 @@ export default class Cart_screen extends Component {
                             <Text style={styles.price}>$ {data.price_products * data.quantity}</Text>
                           </Col>
                           <Col>
-                            <Button style={{ backgroundColor: "red" }} onPress={() => this.delete(data.id)}><Text style={{ color: "white", fontWeight: "bold", textAlign: "center" }}>Remove</Text>
+                            <Button style={{ backgroundColor: "#00afec" }} onPress={() => this.delete(data.id)}><Text style={{ color: "white", fontWeight: "bold", textAlign: "center" }}>Remove</Text>
                             </Button>
                           </Col>
                         </Row>
@@ -154,7 +169,7 @@ export default class Cart_screen extends Component {
                 <Button style={{ backgroundColor: "#FFF", width: '100%', marginRight: 5, borderColor: "#FB6542", borderWidth: 1 }}><Text style={{ color: '#FB6542', textAlign: "center" }}>$ Total : {this.total_price()}</Text></Button>
               </Col>
               <Col>
-                <Button title="Go to Cart" style={{ backgroundColor: '#fb8b31', width: '95%', marginLeft: 3, }} onPress={() => {
+                <Button title="Checkout" style={{ backgroundColor: '#FF5A09', width: '100%', marginLeft: 3, }} onPress={() => {
                   this.props.navigation.navigate("Checkout");
                 }}>
                   <Text style={{ textAlign: "center" }}> Payment </Text>
